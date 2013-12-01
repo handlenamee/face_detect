@@ -24,28 +24,29 @@ void draw()
     }
     opencv.loadImage(capture);
     //ビデオのピクセルを操作できるようにする
-    image(opencv.getInput(), 0, 0);
     Rectangle[] faces = opencv.detect();
     noFill();
     stroke(255, 0, 0);
-    capture.loadPixels();
+    image(opencv.getInput(), 0, 0);
     for (Rectangle face : faces)
     {
-        rect(face.x, face.y, face.x + face.width, face.y + face.height);
         negate(face);
+        rect(face.x, face.y, face.width, face.height);
     }
 }
 
 //色を反転する（なぜか効いてない）
 void negate(Rectangle face)
 {
+    loadPixels();
     //1ピクセルごとに色を調べる。
-    for (int y = 0; y < face.height; y++)
+    for (int y = face.y; y < face.y + face.height; y++)
     {
-        for (int x = 0; x < face.width; x++)
+        for (int x = face.x; x < face.x + face.width; x++)
         {
+            int pixelIndex = y * width + x;
             //ビデオのピクセルを抜き出す
-            int pixelColor = capture.pixels[y*face.width + x];
+            int pixelColor = pixels[pixelIndex];
 
             //赤、緑、青をそれぞれ抽出する。
             int r = (pixelColor >> 16) & 0xff;
@@ -53,7 +54,7 @@ void negate(Rectangle face)
             int b = pixelColor & 0xff;
 
             //ウィンドウのピクセルに当てはめる
-            capture.pixels[y*face.width + x] = color(255-r, 255-g, 255-b);
+            pixels[pixelIndex] = color(255-r, 255-g, 255-b);
         }
     }
     updatePixels();    //画像を更新
